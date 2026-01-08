@@ -14,8 +14,7 @@ import ida_name
 import ida_hexrays
 import ida_funcs
 import traceback
-if idaapi.IDA_SDK_VERSION >= 900:
-    import ida_ida
+
 
 icon = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00*\x00\x00\x00&\x08\x06\x00\x00\x00\xb2\x01\t \x00\x00\x00\x01sRGB\x00\xae\xce\x1c\xe9\x00\x00\x00\x04gAMA\x00\x00\xb1\x8f\x0b\xfca\x05\x00\x00\x00\tpHYs\x00\x00\x0e\xc3\x00\x00\x0e\xc3\x01\xc7o\xa8d\x00\x00\x02TIDATXG\xcd\x98\xcd.\x03Q\x14\xc7\xef\x10\x14-\xd5\xf8Jj!x\x00+,\xc5\x03\x88\x07\xb0\xb0\xb2\xea\x82\'\xc0\x13\x90\xb0\x15\x8f\x80x\x00+k\x89\xd8\x93\xb0\x94\xb0\x13A\xc6\xf9\xb7skz\xe7\xcc\xf4\xdc\xf9\xec/\xf9\xa5\x9d\x99\xce\xbdg\xce\xdc9\xf7N\x15\xb1@\x1e\x93\xf3\xd8\xe81\xaa\xe4\x91\xf7\xd9\xe4\x9etI\x04\xdc\x0b \xb0=\xf2\x89\xbc\xc0\x0e\r\xb2\x89@\xe1;\xb9C\x16\x05\xfaF\x80:\x9ee\xb2\x83KR\x1f\x84\xc8\xf2:\x99\x17\xe8K\xdfY\xed\x01\x19\xc0\x9fU\xbf\xb8\x80\xc0U\xa5\x08\xda\xbe%\xcd~qg\xdbc\xd3\x04\xe3\xc1<A\x9b\xf6\xf8E\x80h\x13\x01q\xfd\xb1\xd9\xd4\xe0\n\xb8\x93\xfcF6 \x00}D\x05\x081FC\xb3\xa9A#\xdc\xc9~1\x96l\x1f8I\x80Zq\xdb\xfe\xa7.J\x04\xbcEF\x81\x00\xf1\x1bI\x80\x10\xe3U\x0c\x1a\xe6\x1a\t\x13\x0f\x1c7apOr7\xad+\x8d4\xab~\xf10"`tf\x96;\x898\xc7\x1at\xc65\x96\x95\x18\x1a\xb1\xa7q\xae\xbeee\xa2\xf2\x97WV\x91\xcd\xae\xe5\xa8\x1b\x81\xb1\xd6glK\x1dp\x1c\xb7\x9fd\x8ea\x01\x92\x98\xc0\xd4\xeaxn\x0e\x97;\xf6G\xb9:Tj\x9e\xc3\x1c\x13\x15w)\x81\xa9\x15\x9d\xdeL\xd5\xdd\xdd\xf2x\xc7~\xceF\xa5\xea\x9e\xd5f\xc2\x02Mu\xa5\x86+\x0etrM\x81\xbe\xcd-\xb9\x1b\xa5\x91\xc01\xed\xf6\xe8\x98\xfbZ_tO\'\xa6\xb9\xe3\xa8\xb1"h\xb8\x89\xf8 OZ_\x83\x9c\xd7f\xd5\xda\xd0\xb0\xb7\xf5\xcf\xca`I\x1d\x8dO\xaa\x92C\xb9\xe4\xc1\xea]\x844P\xb0O>\xb7\xbe\xb6x\xfc\xfeRw_\x9f\xea\x81>\x1b\xe5\xaa\x1aq\xfe\x9bCp\x8d\xcaD\xfb7/\xbf?\xde\x916W\x9e\x99\x80\xf1\xc4\xdd\xc28ZO\x95\xb6\xc4\x99ZMcM\x95\xb6\xd8.XLQ\xdc\xb3|c\xe8 IV\x93.\xbc\xad\x88;\xb5&Zx\xc4%\xce\x82%\xd7lj0\xce\xb8`\xc2Lu\xaa\xb4%\xea\xad\xd5\xb4\x90lj\xd8\xa9\x95\x11Sea\xd9\xd4\x1c\x92\\p~3/\xee\x12\x90\xa9\xa8r\x95Kq\x97\x82\xf1\xc7\x05\ts+\xee\x12\xc2\xb2Z\xe8\x03\x14\x86\xb9`I\xe5=(+\xfcY\xed\xc9ljtV\x0b-\xeeR\xe2\xfc\x81V\x08\x19dR\xa9?"\x80\x16\n\xa6\x0c\x13@\x00\x00\x00\x00IEND\xaeB`\x82'
 icon_id = idaapi.load_custom_icon(data=icon, format="png")
@@ -108,26 +107,15 @@ class VulFiScanner:
         with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),"vulfi_prototypes.json"),"r") as proto_file:
             self.prototypes = json.load(proto_file)
         # get pointer size
-        if idaapi.IDA_SDK_VERSION >= 900:
-            if ida_ida.inf_is_64bit():
-                self.ptr_size = 8
-            elif ida_ida.inf_is_32bit_exactly():
-                self.ptr_size = 4
-            else:
-                self.ptr_size = 2
+        #info = idaapi.get_inf_structure()
+        if idaapi.inf_is_64bit():
+            self.ptr_size = 8
+        elif idaapi.inf_is_32bit_exactly():
+            self.ptr_size = 4
         else:
-            info = idaapi.get_inf_structure()
-            if info.is_64bit():
-                self.ptr_size = 8
-            elif info.is_32bit():
-                self.ptr_size = 4
-            else:
-                self.ptr_size = 2
+            self.ptr_size = 2
         # Get endianness
-        if idaapi.IDA_SDK_VERSION >= 900:
-            self.endian = "big" if ida_ida.inf_is_be() else "little"
-        else:
-            self.endian = "big" if idaapi.cvar.inf.is_be() else "little"
+        self.endian = "big" if idaapi.inf_is_be() else "little"
         # Check whether Hexrays can be used
         if not ida_hexrays.init_hexrays_plugin():
             self.hexrays = False
@@ -239,9 +227,6 @@ class VulFiScanner:
             for func in self.functions_list:
                 try:
                     decompiled_function = ida_hexrays.decompile(func)
-                    if decompiled_function is None:
-                        # Decompilation failed
-                        return loop_check_list
                     code = decompiled_function.pseudocode
                     for tree_item in decompiled_function.treeitems:
                         if tree_item.op == ida_hexrays.cit_while:
@@ -344,9 +329,6 @@ class VulFiScanner:
             for func in self.functions_list:
                 try:
                     decompiled_function = ida_hexrays.decompile(func)
-                    if decompiled_function is None:
-                    # Decompilation failed
-                        return array_access_list
                     code = decompiled_function.pseudocode
                     for citem in decompiled_function.treeitems:
                         if citem.op == ida_hexrays.cot_idx:
@@ -448,9 +430,6 @@ class VulFiScanner:
         except:
             return wrapper_xrefs
         if decompiled_function:
-            if decompiled_function is None:
-                # Decompilation failed
-                return wrapper_xrefs
             # Decompilation is fine
             code = decompiled_function.pseudocode
             for tree_item in decompiled_function.treeitems:
@@ -548,29 +527,6 @@ class VulFiScanner:
             self.call_xref = call_xref
             self.scanned_function = scanned_function
 
-        def size(self):
-            if self.scanner_instance.hexrays:
-                return self.size_hexrays()
-            else:
-                return None
-            
-        def size_hexrays(self):
-            try:
-                if self.param.op == ida_hexrays.cot_cast:
-                    param = self.param.x
-                else:
-                    param = self.param
-                decompiled_function = ida_hexrays.decompile(self.call_xref)
-                if decompiled_function is None:
-                    # Decompilation failed
-                    return None
-                if decompiled_function:
-                    code = decompiled_function.pseudocode
-                    return decompiled_function.lvars[param.v.idx].width 
-                return None
-            except AttributeError:
-                return None
-
 
         def used_as_index(self):
             if self.scanner_instance.hexrays:
@@ -580,21 +536,17 @@ class VulFiScanner:
             
         def used_as_index_hexrays(self):
             decompiled_function = ida_hexrays.decompile(self.call_xref)
-            if decompiled_function is None:
-                # Decompilation failed
-                return False
             if decompiled_function:
                 code = decompiled_function.pseudocode
                 for citem in decompiled_function.treeitems:
                     if citem.op == ida_hexrays.cot_idx:
-                        if self.param is not None:
-                            if citem.to_specific_type.y == self.param:
-                                return True
+                        if citem.to_specific_type.y == self.param:
+                            return True
             return False
 
         def is_constant(self):
             if self.string_value() == "" and self.number_value() == None:
-                if self.scanner_instance.hexrays and self.param and self.param.op == ida_hexrays.cot_ref:
+                if self.param and self.param.op == ida_hexrays.cot_ref:
                     return False
                 asgs = self.__get_var_assignments()
                 if asgs: # asgs will be empty with no hexrays
@@ -657,9 +609,6 @@ class VulFiScanner:
 
         def is_sign_compared_hexrays(self):
             decompiled_function = ida_hexrays.decompile(self.call_xref)
-            if decompiled_function is None:
-                # Decompilation failed
-                return False
             if decompiled_function:
                 code = decompiled_function.pseudocode
                 for citem in decompiled_function.treeitems:
@@ -747,9 +696,6 @@ class VulFiScanner:
             else:
                 param = self.param
             decompiled_function = ida_hexrays.decompile(self.call_xref)
-            if decompiled_function is None:
-                # Decompilation failed
-                return calls
             code = decompiled_function.pseudocode
             for citem in decompiled_function.treeitems:
                 if citem.op == ida_hexrays.cot_call and citem.ea != self.call_xref: # skip calls we are tracing
@@ -775,9 +721,6 @@ class VulFiScanner:
             else:
                 param = self.param
             decompiled_function = ida_hexrays.decompile(self.call_xref)
-            if decompiled_function is None:
-                # Decompilation failed
-                return None
             code = decompiled_function.pseudocode
             for citem in decompiled_function.treeitems:
                 if param == citem.to_specific_type:
@@ -1588,4 +1531,3 @@ hooks.hook()
 
 def PLUGIN_ENTRY():
     return vulfi_fetch_t()
-
